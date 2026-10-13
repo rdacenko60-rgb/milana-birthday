@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>С наступающим Днём Рождения, {{ nickname }}! 💚</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div id="candy-rain"></div>
+
+    <div class="container">
+        <div class="card">
+            <h1>💚 С наступающим Днём Рождения! 💚</h1>
+
+            <div class="hearts">🍬 💚 🍭 💚 🍬</div>
+
+            <p>Дорогая <b>{{ name }}</b>, моя <b>{{ nickname }}</b>!</p>
+
+            <div class="age-badge">Скоро тебе {{ age }} лет! 🎈</div>
+
+            <div class="letter">
+                <p>Я обещал тебе на 1 ноября сюрприз. Так вот, я сделал этот сайт как <b>первый подарок</b> 💚</p>
+                <p>Я над ним работал немало, и вот рассказываю, что будет тебя ждать:</p>
+                <p>Тебя будут ждать <b>крутые подарки все 28 дней</b> до твоего Дня Рождения, и каждый день будут <b>всё круче и круче</b> подарки 🎁</p>
+                <p>Так вооот, с наступающим Днём Рождения! 🎉</p>
+                <p class="hint">💡 И я оставил тебе пасхалки — найди их 😉</p>
+            </div>
+
+            <div class="tomorrow-badge">
+                🎁 Завтра будет ещё один подарок! 🎁
+            </div>
+
+            <button class="surprise-btn" onclick="showSurprise()">
+                🎁 Нажми на сюрприз 🎁
+            </button>
+
+            <div class="surprise-text" id="surprise">
+                💌 Ты — самое лучшее, что случилось со мной.<br>
+                Спасибо, что ты есть, Конфетка! 💚❤️
+            </div>
+
+            {% if is_birthday %}
+                <p class="counter">🎊 Сегодня твой день! 🎊</p>
+            {% else %}
+                <p class="counter">До Дня Рождения осталось: {{ days_left }} дн. 🎂</p>
+            {% endif %}
+        </div>
+
+        <div class="game-card">
+            <h2>🎮 Поймай конфетки для Миланы!</h2>
+            <p class="game-desc">
+                📱 На телефоне — <b>води пальцем</b> по экрану.<br>
+                💻 На компьютере — <b>← →</b> или <b>мышка</b>.<br>
+                Поймай {{ win_score }} конфеток 💚
+            </p>
+
+            <div class="score-board">
+                <span>🍬 Поймано: <b id="score">0</b> / {{ win_score }}</span>
+                <span>❤️ Жизни: <b id="lives">3</b></span>
+            </div>
+
+            <canvas id="game" width="500" height="400"></canvas>
+
+            <div class="game-buttons">
+                <button class="surprise-btn small" onclick="startGame()">▶️ Играть</button>
+                <button class="surprise-btn small green" onclick="resetGame()">🔄 Заново</button>
+            </div>
+
+            <div id="game-message" class="game-message"></div>
+        </div>
+
+        <!-- Секретные пасхалки (спрятаны) -->
+        <div class="easter-eggs">
+            <span class="egg" id="egg1" title="?">🥚</span>
+            <span class="egg" id="egg2" title="?">🥚</span>
+            <span class="egg" id="egg3" title="?">🥚</span>
+            <span class="egg" id="egg4" title="?">🥚</span>
+            <span class="egg" id="egg5" title="?">🥚</span>
+        </div>
+
+        <p class="eggs-found">Найдено пасхалок: <b id="eggs-count">0</b> / 5</p>
+    </div>
+
+    <div id="egg-popup" class="egg-popup">
+        <div class="egg-popup-content">
+            <h3 id="egg-title">🥚</h3>
+            <p id="egg-text"></p>
+            <button class="surprise-btn small" onclick="closeEgg()">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== ПАДАЮЩИЕ КОНФЕТКИ =====
+        const candies = ['🍬', '🍭', '🍫', '🧁', '💚', '🎀', '🎈', '✨'];
+        const rainContainer = document.getElementById('candy-rain');
+
+        for (let i = 0; i < 25; i++) {
+            const el = document.createElement('div');
+            el.className = 'candy-rain';
+            el.textContent = candies[Math.floor(Math.random() * candies.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (5 + Math.random() * 6) + 's';
+            el.style.animationDelay = Math.random() * 5 + 's';
+            el.style.fontSize = (20 + Math.random() * 20) + 'px';
+            rainContainer.appendChild(el);
+        }
+
+        // ===== СЮРПРИЗ-КНОПКА =====
+        function showSurprise() {
+            document.getElementById('surprise').classList.add('show');
+        }
+
+        // ===== ПАСХАЛКИ =====
+        const eggs = [
+            {
+                title: '🥚 Пасхалка #1',
+                text: '💚 Ты — моя любимая Конфетка. Зелёный — твой цвет, и он теперь навсегда в моём сердце.'
+            },
+            {
+                title: '🥚 Пасхалка #2',
+                text: '🎂 14 лет — это начало большого пути. Я хочу пройти его с тобой.'
+            },
+            {
+                title: '🥚 Пасхалка #3',
+                text: '🍬 Знаешь, почему ты Конфетка? Потому что ты делаешь мою жизнь слаще.'
+            },
+            {
+                title: '🥚 Пасхалка #4',
+                text: '🎁 Подсказка: следующий подарок будет связан с твоим любимым цветом 💚'
+            },
+            {
+                title: '🥚 Пасхалка #5',
+                text: '💖 Ты нашла все пасхалки! Ты самая внимательная и классная. Люблю тебя! 🎉'
+            }
+        ];
+
+        let eggsFound = 0;
+        const eggsFoundSet = new Set();
+
+        document.querySelectorAll('.egg').forEach((eggEl, index) => {
+            eggEl.addEventListener('click', () => {
+                if (eggsFoundSet.has(index)) return;
+                eggsFoundSet.add(index);
+                eggsFound++;
+
+                document.getElementById('egg-title').textContent = eggs[index].title;
+                document.getElementById('egg-text').textContent = eggs[index].text;
+                document.getElementById('egg-popup').classList.add('show');
+                document.getElementById('eggs-count').textContent = eggsFound;
+
+                eggEl.textContent = '💚';
+                eggEl.classList.add('found');
+
+                if (eggsFound === eggs.length) {
+                    spawnManyConfetti();
+                }
+            });
+        });
+
+        function closeEgg() {
+            document.getElementById('egg-popup').classList.remove('show');
+        }
+
+        // ===== СЕКРЕТНОЕ: нажми 5 раз на заголовок =====
+        let h1Clicks = 0;
+        document.querySelector('h1').addEventListener('click', () => {
+            h1Clicks++;
+            if (h1Clicks === 5) {
+                document.getElementById('egg-title').textContent = '🤫 Секрет';
+                document.getElementById('egg-text').textContent = 'Ты нашла секретную пасхалку! Ты — самая лучшая Конфетка на свете! 💚🎉';
+                document.getElementById('egg-popup').classList.add('show');
+                spawnManyConfetti();
+                h1Clicks = 0;
+            }
+        });
+
+        // ===== СЕКРЕТНОЕ: введи "конфетка" =====
+        let typed = '';
+        document.addEventListener('keydown', e => {
+            typed += e.key.toLowerCase();
+            if (typed.length > 20) typed = typed.slice(-20);
+            if (typed.includes('конфетка')) {
+                document.getElementById('egg-title').textContent = '🍬 Секретный код!';
+                document.getElementById('egg-text').textContent = 'Ты ввела секретное слово! Ты — настоящая Конфетка! 💚💖';
+                document.getElementById('egg-popup').classList.add('show');
+                spawnManyConfetti();
+                typed = '';
+            }
+        });
+
+        // ===== ИГРА =====
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const WIN_SCORE = {{ win_score }};
+
+        // адаптация под телефон
+        function resizeCanvas() {
+            const maxWidth = Math.min(window.innerWidth - 60, 500);
+            canvas.style.width = maxWidth + 'px';
+            canvas.style.height = (maxWidth * 0.8) + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let basket = { x: 200, y: 350, w: 100, h: 40 };
+        let items = [];
+        let score = 0;
+        let lives = 3;
+        let playing = false;
+        let animationId = null;
+        let keys = {};
+
+        const itemTypes = ['🍬', '🍭', '🍫', '🧁', '💚'];
+        const bombTypes = ['💣', '⚫', '❌'];
+
+        function drawBasket() {
+            ctx.fillStyle = '#2eb872';
+            ctx.beginPath();
+            ctx.roundRect(basket.x, basket.y, basket.w, basket.h, 10);
+            ctx.fill();
+
+            ctx.font = '28px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🧺', basket.x + basket.w / 2, basket.y + basket.h / 2);
+        }
+
+        function drawItems() {
+            ctx.font = '32px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            items.forEach(item => {
+                ctx.fillText(item.emoji, item.x, item.y);
+            });
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = lives;
+        }
+
+        function spawnItem() {
+            const isBomb = Math.random() < 0.25;
+            items.push({
+                x: 30 + Math.random() * (canvas.width - 60),
+                y: -30,
+                speed: 2 + Math.random() * 2.5,
+                emoji: isBomb
+                    ? bombTypes[Math.floor(Math.random() * bombTypes.length)]
+                    : itemTypes[Math.floor(Math.random() * itemTypes.length)],
+                isBomb: isBomb
+            });
+        }
+
+        function gameLoop() {
+            if (!playing) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#fff5fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (keys['ArrowLeft']) basket.x -= 7;
+            if (keys['ArrowRight']) basket.x += 7;
+            basket.x = Math.max(0, Math.min(canvas.width - basket.w, basket.x));
+
+            if (Math.random() < 0.02) spawnItem();
+
+            items.forEach((item, i) => {
+                item.y += item.speed;
+
+                if (
+                    item.y > basket.y &&
+                    item.y < basket.y + basket.h &&
+                    item.x > basket.x &&
+                    item.x < basket.x + basket.w
+                ) {
+                    if (item.isBomb) {
+                        lives--;
+                        updateHUD();
+                        if (lives <= 0) return endGame(false);
+                    } else {
+                        score++;
+                        updateHUD();
+                        if (score >= WIN_SCORE) return endGame(true);
+                    }
+                    items.splice(i, 1);
+                    return;
+                }
+
+                if (item.y > canvas.height + 30) {
+                    if (!item.isBomb) {
+                        lives--;
+                        updateHUD();
+                        if (lives <= 0) return endGame(false);
+                    }
+                    items.splice(i, 1);
+                }
+            });
+
+            drawBasket();
+            drawItems();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            if (playing) return;
+            playing = true;
+            score = 0;
+            lives = 3;
+            items = [];
+            updateHUD();
+            document.getElementById('game-message').textContent = '';
+            document.getElementById('game-message').className = 'game-message';
+            gameLoop();
+        }
+
+        function resetGame() {
+            playing = false;
+            cancelAnimationFrame(animationId);
+            score = 0;
+            lives = 3;
+            items = [];
+            updateHUD();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('game-message').textContent = '';
+            document.getElementById('game-message').className = 'game-message';
+        }
+
+        function endGame(win) {
+            playing = false;
+            cancelAnimationFrame(animationId);
+            const msg = document.getElementById('game-message');
+            if (win) {
+                msg.textContent = '🎉 Победа! Милана, ты лучшая! 💚 Ты поймала ' + score + ' конфеток!';
+                msg.className = 'game-message win';
+                for (let i = 0; i < 30; i++) {
+                    setTimeout(() => spawnConfetti(), i * 50);
+                }
+            } else {
+                msg.textContent = '💔 Ой! Попробуй ещё раз, Конфетка!';
+                msg.className = 'game-message lose';
+            }
+        }
+
+        function spawnConfetti() {
+            const el = document.createElement('div');
+            el.className = 'candy-rain';
+            el.textContent = ['💚', '💖', '🍬', '✨', '🎉'][Math.floor(Math.random() * 5)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = '3s';
+            el.style.fontSize = '30px';
+            rainContainer.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
+
+        function spawnManyConfetti() {
+            for (let i = 0; i < 40; i++) {
+                setTimeout(() => spawnConfetti(), i * 40);
+            }
+        }
+
+        // ===== УПРАВЛЕНИЕ =====
+        // клавиатура
+        document.addEventListener('keydown', e => keys[e.key] = true);
+        document.addEventListener('keyup', e => keys[e.key] = false);
+
+        // мышь
+        canvas.addEventListener('mousemove', e => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            basket.x = mouseX - basket.w / 2;
+        });
+
+        // 📱 ПАЛЕЦ (для телефона) — движение
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const touchX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            basket.x = touchX - basket.w / 2;
+        }, { passive: false });
+
+        // 📱 ПАЛЕЦ — тап
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const touchX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            basket.x = touchX - basket.w / 2;
+        }, { passive: false });
+
+        // закруглённые прямоугольники
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+            this.beginPath();
+            this.moveTo(x + r, y);
+            this.arcTo(x + w, y, x + w, y + h, r);
+            this.arcTo(x + w, y + h, x, y + h, r);
+            this.arcTo(x, y + h, x, y, r);
+            this.arcTo(x, y, x + w, y, r);
+            this.closePath();
+            return this;
+        };
+    </script>
+</body>
+</html>
