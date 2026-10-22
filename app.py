@@ -6,7 +6,7 @@ app = Flask(__name__)
 HER_NAME = "Милана"
 NICKNAME = "Конфетка"
 AGE = 14
-BIRTHDAY = date(2026, 11, 1)
+BIRTHDAY = date(2026, 11, 28)
 GAME_SCORE_TO_WIN = 15
 
 @app.route("/")
