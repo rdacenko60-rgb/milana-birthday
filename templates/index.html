@@ -47,13 +47,8 @@
                 <p class="counter">До Дня Рождения осталось: {{ days_left }} дн. 🎂</p>
             {% endif %}
         </div>
-            <h2>🎮 Поймай конфетки!</h2>
-            <p class="game-desc">
-                📱 На телефоне — <b>води пальцем</b> по экрану.<br>
-                💻 На компьютере — <b>← →</b> или <b>мышка</b>.<br>
-                Поймай {{ win_score }} конфеток 💚
-            </p>
-                        <div class="game-card quiz-container">
+
+        <div class="game-card quiz-container">
             <h2>💚 Насколько хорошо ты знаешь нас?</h2>
             <p class="game-desc">Проверим твою память и внимание 😉</p>
 
@@ -74,7 +69,7 @@
                 <button class="surprise-btn small" onclick="location.reload()" style="margin-top: 20px;">Пройти еще раз</button>
             </div>
         </div>
-        <!-- Секретные пасхалки (спрятаны) -->
+
         <div class="easter-eggs">
             <span class="egg" id="egg1" title="?">🥚</span>
             <span class="egg" id="egg2" title="?">🥚</span>
@@ -93,7 +88,8 @@
             <button class="surprise-btn small" onclick="closeEgg()">Закрыть</button>
         </div>
     </div>
-        <script>
+
+    <script>
         // ===== ПАДАЮЩИЕ КОНФЕТКИ =====
         const candies = ['🍬', '🍭', '🍫', '🧁', '💚', '🎀', '🎈', '✨'];
         const rainContainer = document.getElementById('candy-rain');
