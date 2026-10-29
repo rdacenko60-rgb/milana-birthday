@@ -47,30 +47,33 @@
                 <p class="counter">До Дня Рождения осталось: {{ days_left }} дн. 🎂</p>
             {% endif %}
         </div>
-
-        <div class="game-card">
             <h2>🎮 Поймай конфетки!</h2>
             <p class="game-desc">
                 📱 На телефоне — <b>води пальцем</b> по экрану.<br>
                 💻 На компьютере — <b>← →</b> или <b>мышка</b>.<br>
                 Поймай {{ win_score }} конфеток 💚
             </p>
+                        <div class="game-card quiz-container">
+            <h2>💚 Насколько хорошо ты знаешь нас?</h2>
+            <p class="game-desc">Проверим твою память и внимание 😉</p>
 
-            <div class="score-board">
-                <span>🍬 Поймано: <b id="score">0</b> / {{ win_score }}</span>
-                <span>❤️ Жизни: <b id="lives">3</b></span>
+            <div id="quiz-start">
+                <button class="surprise-btn" onclick="startQuiz()">Начать квиз</button>
             </div>
 
-            <canvas id="game" width="500" height="400"></canvas>
-
-            <div class="game-buttons">
-                <button class="surprise-btn small" onclick="startGame()">▶️ Играть</button>
-                <button class="surprise-btn small green" onclick="resetGame()">🔄 Заново</button>
+            <div id="quiz-content" style="display: none;">
+                <h3 id="question-text" style="color: #1e7d4f; margin-bottom: 20px; font-size: 22px;"></h3>
+                <div id="options-container" style="display: flex; flex-direction: column; gap: 10px; max-width: 400px; margin: 0 auto;"></div>
+                <p id="quiz-result" style="margin-top: 20px; font-weight: bold; font-size: 20px; min-height: 30px;"></p>
             </div>
 
-            <div id="game-message" class="game-message"></div>
+            <div id="quiz-end" style="display: none;">
+                <h3 style="color: #d6336c; font-size: 26px; margin-bottom: 15px;">Квиз пройден!</h3>
+                <p id="final-score" style="font-size: 22px; color: #1e7d4f; font-weight: bold; margin-bottom: 20px;"></p>
+                <p id="final-message" style="font-size: 18px; color: #333; line-height: 1.6;"></p>
+                <button class="surprise-btn small" onclick="location.reload()" style="margin-top: 20px;">Пройти еще раз</button>
+            </div>
         </div>
-
         <!-- Секретные пасхалки (спрятаны) -->
         <div class="easter-eggs">
             <span class="egg" id="egg1" title="?">🥚</span>
@@ -90,8 +93,7 @@
             <button class="surprise-btn small" onclick="closeEgg()">Закрыть</button>
         </div>
     </div>
-
-    <script>
+        <script>
         // ===== ПАДАЮЩИЕ КОНФЕТКИ =====
         const candies = ['🍬', '🍭', '🍫', '🧁', '💚', '🎀', '🎈', '✨'];
         const rainContainer = document.getElementById('candy-rain');
@@ -114,26 +116,11 @@
 
         // ===== ПАСХАЛКИ =====
         const eggs = [
-            {
-                title: '🥚 Пасхалка #1',
-                text: '💚 я хочу сказать тебе, сасибо что ты вообще у меня есть.'
-            },
-            {
-                title: '🥚 Пасхалка #2',
-                text: '🎂 14 лет — это начало большого пути. Я хочу пройти его с тобой.'
-            },
-            {
-                title: '🥚 Пасхалка #3',
-                text: '🍬 Знаешь, почему ты Конфетка? Потому что ты делаешь мою жизнь слаще.'
-            },
-            {
-                title: '🥚 Пасхалка #4',
-                text: '🎁 Подсказка: следующий подарок будет связан с твоим любимым цветом 💚'
-            },
-            {
-                title: '🥚 Пасхалка #5',
-                text: '💖 Ты нашла все пасхалки! просто я так и не понял как сделать другие посхалки,так вот, с наступающим днем рождения, извини что так мало🎉'
-            }
+            { title: '🥚 Пасхалка #1', text: '💚 я хочу сказать тебе, сасибо что ты вообще у меня есть.' },
+            { title: '🥚 Пасхалка #2', text: '🎂 14 лет — это начало большого пути. Я хочу пройти его с тобой.' },
+            { title: '🥚 Пасхалка #3', text: '🍬 Знаешь, почему ты Конфетка? Потому что ты делаешь мою жизнь слаще.' },
+            { title: '🥚 Пасхалка #4', text: '🎁 Подсказка: следующий подарок будет связан с твоим любимым цветом 💚' },
+            { title: '🥚 Пасхалка #5', text: '💖 Ты нашла все пасхалки! просто я так и не понял как сделать другие посхалки,так вот, с наступающим днем рождения, извини что так мало🎉' }
         ];
 
         let eggsFound = 0;
@@ -153,9 +140,7 @@
                 eggEl.textContent = '💚';
                 eggEl.classList.add('found');
 
-                if (eggsFound === eggs.length) {
-                    spawnManyConfetti();
-                }
+                if (eggsFound === eggs.length) spawnManyConfetti();
             });
         });
 
@@ -190,160 +175,93 @@
             }
         });
 
-        // ===== ИГРА =====
-        const canvas = document.getElementById('game');
-        const ctx = canvas.getContext('2d');
-        const WIN_SCORE = {{ win_score }};
+        // ===== КВИЗ =====
+        const quizData = [
+            { question: "Какой у меня цвет глаз?", options: ["Карий-зеленый", "Карий", "Зеленые"], correct: 0 },
+            { question: "Что я делаю, когда нервничаю?", options: ["Трясу коленом", "Грызу ногти как чифир", "Ковыряю что-то"], correct: 2 },
+            { question: "Где мы в первый раз погуляли?", options: ["В парке", "Около речки", "Около твоего дома"], correct: 1 },
+            { question: "Что я написал первым в нашем чате?", options: ["пр", "мдо", "чо"], correct: 1 }
+        ];
 
-        // адаптация под телефон
-        function resizeCanvas() {
-            const maxWidth = Math.min(window.innerWidth - 60, 500);
-            canvas.style.width = maxWidth + 'px';
-            canvas.style.height = (maxWidth * 0.8) + 'px';
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        let basket = { x: 200, y: 350, w: 100, h: 40 };
-        let items = [];
+        let currentQuestion = 0;
         let score = 0;
-        let lives = 3;
-        let playing = false;
-        let animationId = null;
-        let keys = {};
 
-        const itemTypes = ['🍬', '🍭', '🍫', '🧁', '💚'];
-        const bombTypes = ['💣', '⚫', '❌'];
-
-        function drawBasket() {
-            ctx.fillStyle = '#2eb872';
-            ctx.beginPath();
-            ctx.roundRect(basket.x, basket.y, basket.w, basket.h, 10);
-            ctx.fill();
-
-            ctx.font = '28px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🧺', basket.x + basket.w / 2, basket.y + basket.h / 2);
+        function startQuiz() {
+            document.getElementById('quiz-start').style.display = 'none';
+            document.getElementById('quiz-content').style.display = 'block';
+            loadQuestion();
         }
 
-        function drawItems() {
-            ctx.font = '32px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            items.forEach(item => {
-                ctx.fillText(item.emoji, item.x, item.y);
+        function loadQuestion() {
+            const q = quizData[currentQuestion];
+            document.getElementById('question-text').textContent = (currentQuestion + 1) + ". " + q.question;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'surprise-btn small';
+                btn.style.width = '100%';
+                btn.style.background = 'white';
+                btn.style.color = '#1e7d4f';
+                btn.style.border = '2px solid #a8e6a8';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
             });
         }
 
-        function updateHUD() {
-            document.getElementById('score').textContent = score;
-            document.getElementById('lives').textContent = lives;
-        }
-
-        function spawnItem() {
-            const isBomb = Math.random() < 0.25;
-            items.push({
-                x: 30 + Math.random() * (canvas.width - 60),
-                y: -30,
-                speed: 2 + Math.random() * 2.5,
-                emoji: isBomb
-                    ? bombTypes[Math.floor(Math.random() * bombTypes.length)]
-                    : itemTypes[Math.floor(Math.random() * itemTypes.length)],
-                isBomb: isBomb
-            });
-        }
-
-        function gameLoop() {
-            if (!playing) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#fff5fa';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            if (keys['ArrowLeft']) basket.x -= 7;
-            if (keys['ArrowRight']) basket.x += 7;
-            basket.x = Math.max(0, Math.min(canvas.width - basket.w, basket.x));
-
-            if (Math.random() < 0.02) spawnItem();
-
-            items.forEach((item, i) => {
-                item.y += item.speed;
-
-                if (
-                    item.y > basket.y &&
-                    item.y < basket.y + basket.h &&
-                    item.x > basket.x &&
-                    item.x < basket.x + basket.w
-                ) {
-                    if (item.isBomb) {
-                        lives--;
-                        updateHUD();
-                        if (lives <= 0) return endGame(false);
-                    } else {
-                        score++;
-                        updateHUD();
-                        if (score >= WIN_SCORE) return endGame(true);
-                    }
-                    items.splice(i, 1);
-                    return;
-                }
-
-                if (item.y > canvas.height + 30) {
-                    if (!item.isBomb) {
-                        lives--;
-                        updateHUD();
-                        if (lives <= 0) return endGame(false);
-                    }
-                    items.splice(i, 1);
-                }
-            });
-
-            drawBasket();
-            drawItems();
-            animationId = requestAnimationFrame(gameLoop);
-        }
-
-        function startGame() {
-            if (playing) return;
-            playing = true;
-            score = 0;
-            lives = 3;
-            items = [];
-            updateHUD();
-            document.getElementById('game-message').textContent = '';
-            document.getElementById('game-message').className = 'game-message';
-            gameLoop();
-        }
-
-        function resetGame() {
-            playing = false;
-            cancelAnimationFrame(animationId);
-            score = 0;
-            lives = 3;
-            items = [];
-            updateHUD();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('game-message').textContent = '';
-            document.getElementById('game-message').className = 'game-message';
-        }
-
-        function endGame(win) {
-            playing = false;
-            cancelAnimationFrame(animationId);
-            const msg = document.getElementById('game-message');
-            if (win) {
-                msg.textContent = '🎉 Победа! Милана, ты лучшая! 💚 Ты поймала ' + score + ' конфеток!';
-                msg.className = 'game-message win';
-                for (let i = 0; i < 30; i++) {
-                    setTimeout(() => spawnConfetti(), i * 50);
-                }
+        function checkAnswer(selected, btn) {
+            const q = quizData[currentQuestion];
+            const resultText = document.getElementById('quiz-result');
+            
+            document.querySelectorAll('#options-container button').forEach(b => b.disabled = true);
+            
+            if (selected === q.correct) {
+                score++;
+                btn.style.background = '#a8e6a8';
+                btn.style.color = 'white';
+                resultText.textContent = '✅ Верно!';
+                resultText.style.color = '#2eb872';
             } else {
-                msg.textContent = '💔 Ой! Попробуй ещё раз, Конфетка!';
-                msg.className = 'game-message lose';
+                btn.style.background = '#ffb3b3';
+                btn.style.color = 'white';
+                resultText.textContent = '❌ Не угадала!';
+                resultText.style.color = '#d6336c';
             }
+
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < quizData.length) {
+                    resultText.textContent = '';
+                    loadQuestion();
+                } else {
+                    endQuiz();
+                }
+            }, 1500);
         }
 
+        function endQuiz() {
+            document.getElementById('quiz-content').style.display = 'none';
+            document.getElementById('quiz-end').style.display = 'block';
+            
+            document.getElementById('final-score').textContent = "Твой результат: " + score + " из " + quizData.length;
+            
+            let msg = "";
+            if (score === quizData.length) {
+                msg = "💌 Ты знаешь меня лучше всех. Спасибо, что ты есть, Конфетка! Я тебя очень люблю. 💚";
+            } else if (score >= 2) {
+                msg = "💌 Неплохо! Но есть куда расти. Я все равно тебя люблю! 💚";
+            } else {
+                msg = "💌 Ну и память у тебя... Но я все равно тебя люблю, куда деваться! 😂💚";
+            }
+            document.getElementById('final-message').textContent = msg;
+            
+            spawnManyConfetti();
+        }
+
+        // ===== КОНФЕТТИ =====
         function spawnConfetti() {
             const el = document.createElement('div');
             el.className = 'candy-rain';
@@ -360,48 +278,6 @@
                 setTimeout(() => spawnConfetti(), i * 40);
             }
         }
-
-        // ===== УПРАВЛЕНИЕ =====
-        // клавиатура
-        document.addEventListener('keydown', e => keys[e.key] = true);
-        document.addEventListener('keyup', e => keys[e.key] = false);
-
-        // мышь
-        canvas.addEventListener('mousemove', e => {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            basket.x = mouseX - basket.w / 2;
-        });
-
-        // 📱 ПАЛЕЦ (для телефона) — движение
-        canvas.addEventListener('touchmove', e => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const touchX = (touch.clientX - rect.left) * (canvas.width / rect.width);
-            basket.x = touchX - basket.w / 2;
-        }, { passive: false });
-
-        // 📱 ПАЛЕЦ — тап
-        canvas.addEventListener('touchstart', e => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const touchX = (touch.clientX - rect.left) * (canvas.width / rect.width);
-            basket.x = touchX - basket.w / 2;
-        }, { passive: false });
-
-        // закруглённые прямоугольники
-        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-            this.beginPath();
-            this.moveTo(x + r, y);
-            this.arcTo(x + w, y, x + w, y + h, r);
-            this.arcTo(x + w, y + h, x, y + h, r);
-            this.arcTo(x, y + h, x, y, r);
-            this.arcTo(x, y, x + w, y, r);
-            this.closePath();
-            return this;
-        };
     </script>
 </body>
 </html>
